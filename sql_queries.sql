@@ -1,14 +1,17 @@
 use php_ecomm_db;
 
 -- Deleting all tables
-SET FOREIGN_KEY_CHECKS=0;
-DROP TABLE roles;
-DROP TABLE users;
+SET FOREIGN_KEY_CHECKS=0; -- Checking for foreign key constraints and turing them off
+DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS orders;
 
 -- Creating ROLES table
 
 CREATE TABLE IF NOT EXISTS `roles` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `title` varchar(20) NOT NULL,
   `description` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
@@ -17,18 +20,65 @@ CREATE TABLE IF NOT EXISTS `roles` (
 -- Creating USERS table 
 
 CREATE TABLE IF NOT EXISTS `users` (
-	`id` int NOT NULL AUTO_INCREMENT,
+	`id` INT NOT NULL AUTO_INCREMENT,
     `name` varchar(30) NOT NULL,
     `email_id` varchar(30) NOT NULL,
     `phone_no` varchar(12) NOT NULL,
-    `role_id` int NOT NULL,
+    `role_id` INT NOT NULL,
     `password` varchar(255) NOT NULL,
-    `is_deleted` boolean DEFAULT(1),
+    `is_deleted` boolean DEFAULT(0),
     PRIMARY KEY (id),
-    FOREIGN KEY(role_id) references roles (id) on delete cascade
+    FOREIGN KEY(role_id) REFERENCES roles (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- 
+-- Creating CATEGORIES table 
+
+CREATE TABLE IF NOT EXISTS `categories` (
+	`id` INT NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(50) NOT NULL,
+    `description` VARCHAR(255) NOT NULL,
+    `image` VARCHAR(50) NOT NULL DEFAULT('product_avatar.jpg'),
+    `status` boolean DEFAULT(1),
+    `is_deleted` boolean DEFAULT(0),
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Creating PRODUCTS table
+
+CREATE TABLE IF NOT EXISTS `products` (
+	`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `title` VARCHAR(100) NOT NULL,
+    `description` TEXT NOT NULL,
+    `category_id` int NOT NULL,
+    `image` VARCHAR(100) NOT NULL DEFAULT('product_avatar.jpg'),
+    `price` DECIMAL(10,2) NOT NULL , -- MAX LIMIT (99999999.99)
+    `status` BOOLEAN NOT NULL DEFAULT(1),
+    `is_deleted` BOOLEAN NOT NULL DEFAULT(0),
+    FOREIGN KEY(category_id) REFERENCES categories(id) on DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Creating Coupen table 
+
+CREATE TABLE IF NOT EXISTS `coupens` (
+	`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `title` VARCHAR(255) NOT NULL,
+    `code` VARCHAR(20) NOT NULL,
+    `status` BOOLEAN NOT NULL DEFAULT(1),
+    `id_deleted` BOOLEAN NOT NULL DEFAULT(0)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Creating ORDERS table 
+
+CREATE TABLE IF NOT EXISTS `orders` (
+	`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `order_details` JSON NOT NULL, -- Declaring JSON Data type.
+    `user_id` INT NOT NULL,
+    `amount` DECIMAL(10,2) NOT NULL,
+    `status` VARCHAR(20) NOT NULL,
+    `coupen_id` INT NULL DEFAULT(0),
+    `is_deleted` BOOLEAN NOT NULL DEFAULT(0),
+    FOREIGN KEY(coupen_id) REFERENCES coupens(id) ON DELETE CASCADE 
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
 
